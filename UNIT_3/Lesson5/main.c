@@ -21,6 +21,7 @@
 
 #include<stdint.h>
 #include<stdlib.h>
+#include<stdio.h>
 #include"Platform_Types.h"
 
 #define RCC_BASE     0x40021000
@@ -48,7 +49,7 @@ unsigned char g_variales[3]={1,2,3};
 unsigned char const const_variables[3]={1,2,3};
 volatile unsigned char bss_var[3];
 
-void* _sbark(int incr)
+void* _sbrk(int incr)
 {
 	static unsigned char* heap_ptr=NULL;
 	unsigned char* prev_heap_ptr=NULL;
@@ -56,12 +57,13 @@ void* _sbark(int incr)
 	extern unsigned int _heap_End;
 	//First time intialized
 	if(heap_ptr==NULL)
-		heap_ptr=(unsigned char *) _E_bss;
+		heap_ptr=(unsigned char *)&_E_bss;
+	
 	
 	prev_heap_ptr=heap_ptr;
 	
 	//protect stack
-	if((heap_ptr+incr)>_((&_heap_End))
+	if((heap_ptr+incr)>((unsigned char *)&_heap_End))
 		return (void*) NULL;
 	
 	heap_ptr+=incr;
@@ -70,6 +72,7 @@ void* _sbark(int incr)
 
 int main(void){
 	int *p=(int *)malloc(4);
+	free(p);
 	RCC_APB2ENR |=RCC_IOPAEN;
 	GPIOA_CRH   &=0xFF0FFFFF;
 	GPIOA_CRH   |=0x00200000;
